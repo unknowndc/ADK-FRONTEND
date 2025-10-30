@@ -11,8 +11,18 @@ import {
 
 function App() {
   const [selectedDept, setSelectedDept] = useState<string | null>(null);
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
 
-  // Removed Superadmin (we’ll add secret access later)
+  // Hardcoded credentials for each department
+  const credentials: Record<string, { username: string; password: string }> = {
+    Order: { username: 'order_user', password: 'order123' },
+    Delivery: { username: 'delivery_user', password: 'delivery123' },
+    Accounts: { username: 'accounts_user', password: 'accounts123' },
+    Client: { username: 'client_user', password: 'client123' },
+    // Superadmin will be added later manually
+  };
+
   const departments = [
     { name: 'Order', color: '#28a745' },
     { name: 'Delivery', color: '#007bff' },
@@ -25,7 +35,17 @@ function App() {
       Alert.alert('Missing Info', 'Please select a department first!');
       return;
     }
-    Alert.alert('Login Successful', `Logging in as ${selectedDept} department`);
+
+    const dept = credentials[selectedDept];
+    if (username === dept.username && password === dept.password) {
+      Alert.alert(
+        'Login Successful',
+        `Welcome, ${selectedDept} department user!`
+      );
+      // later this will navigate to department-specific screen
+    } else {
+      Alert.alert('Login Failed', 'Invalid username or password.');
+    }
   };
 
   return (
@@ -37,6 +57,8 @@ function App() {
           placeholder="Username"
           placeholderTextColor="#999"
           style={styles.input}
+          value={username}
+          onChangeText={setUsername}
         />
 
         <TextInput
@@ -44,6 +66,8 @@ function App() {
           placeholderTextColor="#999"
           secureTextEntry
           style={styles.input}
+          value={password}
+          onChangeText={setPassword}
         />
 
         <Text style={styles.label}>Select Department:</Text>

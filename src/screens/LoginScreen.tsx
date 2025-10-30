@@ -1,112 +1,80 @@
-﻿import React, { useEffect, useState } from 'react';
-import {
-  View,
-  TextInput,
-  Button,
-  Text,
-  StyleSheet,
-  Alert,
-  Switch,
-} from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+﻿import React, { useState } from 'react';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useNavigation } from '@react-navigation/native';
+import { RootStackParamList } from '../navigation/AppNavigator';
+
+type LoginScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Login'>;
+
+const users = {
+  order: { username: 'order', password: '1234' },
+  delivery: { username: 'delivery', password: '1234' },
+  accounts: { username: 'accounts', password: '1234' },
+  client: { username: 'client', password: '1234' },
+  superadmin: { username: 'superadmin', password: '9999' },
+} as const;
 
 export default function LoginScreen() {
+  const navigation = useNavigation<LoginScreenNavigationProp>();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [remember, setRemember] = useState(false);
 
-  useEffect(() => {
-    const loadSavedLogin = async () => {
-      try {
-        const savedUser = await AsyncStorage.getItem('user');
-        if (savedUser) {
-          Alert.alert('Auto Login', `Welcome back, ${savedUser}!`);
-          setUsername(savedUser);
-        }
-      } catch (err) {
-        console.error('Error loading saved login:', err);
-      }
-    };
-    loadSavedLogin();
-  }, []);
+  const handleLogin = () => {
+    const user = Object.values(users).find(
+      (u) => u.username === username && u.password === password
+    );
 
-  const handleLogin = async () => {
-    if (!username || !password) {
-      Alert.alert('Error', 'Please enter both username and password.');
+    if (!user) {
+      Alert.alert('Login Failed', 'Invalid username or password');
       return;
     }
 
-    const departments = ['order', 'delivery', 'accounts', 'client'];
-    const user = username.toLowerCase();
-
-    if (departments.includes(user)) {
-      if (remember) {
-        await AsyncStorage.setItem('user', username);
-      } else {
-        await AsyncStorage.removeItem('user');
-      }
-      Alert.alert('Success', `Welcome, ${username}!`);
-    } else {
-      Alert.alert('Error', 'Invalid department. Try again.');
+    switch (username) {
+      case 'order':
+        navigation.navigate('Order');
+        break;
+      case 'delivery':
+        navigation.navigate('Delivery');
+        break;
+      case 'accounts':
+        navigation.navigate('Accounts');
+        break;
+      case 'client':
+        navigation.navigate('Client');
+        break;
+      case 'superadmin':
+        navigation.navigate('SuperAdmin');
+        break;
     }
   };
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Department Login</Text>
-
       <TextInput
-        style={styles.input}
-        placeholder="Username (e.g. order)"
-        placeholderTextColor="#888"
+        placeholder="Username"
         value={username}
         onChangeText={setUsername}
-      />
-
-      <TextInput
         style={styles.input}
+      />
+      <TextInput
         placeholder="Password"
-        placeholderTextColor="#888"
-        secureTextEntry
         value={password}
         onChangeText={setPassword}
+        secureTextEntry
+        style={styles.input}
       />
-
-      <View style={styles.rememberContainer}>
-        <Text>Remember Me</Text>
-        <Switch value={remember} onValueChange={setRemember} />
-      </View>
-
-      <Button title="Login" onPress={handleLogin} color="#007AFF" />
+      <TouchableOpacity onPress={handleLogin} style={styles.button}>
+        <Text style={styles.buttonText}>Login</Text>
+      </TouchableOpacity>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    padding: 20,
-    backgroundColor: '#fff',
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 20,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 10,
-    padding: 12,
-    marginBottom: 15,
-    fontSize: 16,
-  },
-  rememberContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
+  container: { flex: 1, justifyContent: 'center', padding: 20 },
+  title: { fontSize: 24, textAlign: 'center', marginBottom: 20 },
+  input: { borderWidth: 1, borderColor: '#ccc', padding: 10, borderRadius: 8, marginBottom: 10 },
+  button: { backgroundColor: '#007AFF', padding: 12, borderRadius: 8 },
+  buttonText: { color: '#fff', textAlign: 'center', fontSize: 16 },
 });
